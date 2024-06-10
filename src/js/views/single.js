@@ -1,26 +1,48 @@
 import React, { useState, useEffect, useContext } from "react";
-import PropTypes from "prop-types";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
+import ContactCard from "../component/ContactCard"; // Importación correcta
 
-export const Single = props => {
-	const { store, actions } = useContext(Context);
-	const params = useParams();
-	return (
-		<div className="jumbotron">
-			<h1 className="display-4">This will show the demo element: {store.demo[params.theid].title}</h1>
+export const Single = () => {
+  const { store, actions } = useContext(Context);
+  const params = useParams();
+  const [singleContact, setSingleContact] = useState({});
+  const navigate = useNavigate();
 
-			<hr className="my-4" />
+  // Traer los datos del contacto individual
+  const getIndividualContact = () => {
+    if (params.theid) {
+      fetch(`https://playground.4geeks.com/apis/fake/contact/${params.theid}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          setSingleContact(data);
+        })
+        .catch((error) => console.log(error));
+    } else {
+      console.log("Invalid ID provided", params.theid);
+    }
+  };
 
-			<Link to="/">
-				<span className="btn btn-primary btn-lg" href="#" role="button">
-					Back home
-				</span>
-			</Link>
-		</div>
-	);
-};
+  useEffect(() => {
+    getIndividualContact();
+  }, [params.theid]);
 
-Single.propTypes = {
-	match: PropTypes.object
+  return (
+    <div className="container">
+      {Object.keys(singleContact).length > 0 ? (
+        <ContactCard contact={singleContact} />
+      ) : (
+        <div>Loading...</div>
+      )}
+      <div className="m-4 d-flex justify-content-around">
+        <Link to="/">
+          <button className="btn btn-primary">Home</button>
+        </Link>
+        <Link to="/demo">
+          <button className="btn btn-primary">Contacts</button>
+        </Link>
+      </div>
+    </div>
+  );
 };
